@@ -51,3 +51,34 @@
 - [x] Verify offline functionality in airplane mode
 - [x] Validate e1RM calculations
 - [x] Test data export/import cyclesistence across browser sessions
+
+
+## Sprint 2: Analytics & Autoregulation
+
+### Analytics Dashboard
+- [x] Create Analytics page with navigation
+- [x] Implement e1RM progression line charts (per exercise)
+- [x] Add volume tracking (sets × reps × weight) over time
+- [x] Build muscle group distribution pie/bar charts
+- [x] Add date range filters for analytics views
+- [x] Display personal records (PRs) for each exercise
+
+### Autoregulation Logic
+- [x] Implement set addition algorithm based on RIR performance
+- [x] Add feedback-based adjustments (soreness, pump, joint pain)
+- [x] Create set recommendation system for microcycles
+- [x] Add visual indicators for recommended set changes
+- [x] Implement progressive overload tracking
+
+### Workout Enhancements
+- [x] Add rest timer with countdown
+- [x] Implement browser notifications for rest periods
+- [x] Add workout duration tracking
+- [x] Create workout summary screen with session stats
+- [x] Add quick-access to previous set data during logging
+
+### Testing & Validation
+- [x] Test e1RM calculation accuracy with sample data
+- [x] Verify autoregulation logic with various feedback scenarios
+- [x] Test analytics charts with multiple weeks of data
+- [x] Validate rest timer and notifications

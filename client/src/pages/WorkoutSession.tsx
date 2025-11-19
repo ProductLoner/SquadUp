@@ -30,6 +30,7 @@ import {
 } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { RestTimer } from '@/components/RestTimer';
 
 export default function WorkoutSession() {
   const [, params] = useRoute('/workout/:id');
@@ -263,6 +264,11 @@ export default function WorkoutSession() {
             </Button>
           </div>
         )}
+
+        {/* Rest Timer */}
+        <div className="mt-6">
+          <RestTimer defaultDuration={120} />
+        </div>
       </div>
 
       {/* Feedback Dialog */}

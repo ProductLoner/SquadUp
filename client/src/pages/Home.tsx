@@ -95,13 +95,9 @@ export default function Home() {
 
           {/* Analytics */}
           <Link href="/analytics">
-            <div className="p-6 bg-card border-2 border-border rounded-lg hover:border-primary transition-colors cursor-pointer group">
-              <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
-                  <BarChart3 className="w-6 h-6 text-green-500" />
-                </div>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-foreground">Analytics</h3>
+            <div className="p-8 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
+              <BarChart3 className="w-12 h-12 text-green-500 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Analytics</h2>
               <p className="text-muted-foreground">
                 Track progress with e1RM and volume metrics
               </p>

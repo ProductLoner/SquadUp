@@ -11,6 +11,7 @@ import Programs from "./pages/Programs";
 import ProgramDetail from "./pages/ProgramDetail";
 import WorkoutSession from "./pages/WorkoutSession";
 import Settings from "./pages/Settings";
+import Analytics from "./pages/Analytics";
 import { initializeDatabase } from "./lib/db";
 
 function Router() {
@@ -22,6 +23,7 @@ function Router() {
       <Route path={"/programs/:id"} component={ProgramDetail} />
       <Route path={"/workout/:id"} component={WorkoutSession} />
       <Route path={"/settings"} component={Settings} />
+      <Route path={"/analytics"} component={Analytics} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
