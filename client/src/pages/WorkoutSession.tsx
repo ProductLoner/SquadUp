@@ -31,6 +31,7 @@ import {
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { RestTimer } from '@/components/RestTimer';
+import { ExerciseAutoregulation } from '@/components/ExerciseAutoregulation';
 
 export default function WorkoutSession() {
   const [, params] = useRoute('/workout/:id');
@@ -372,6 +373,12 @@ function CurrentExerciseCard({
           </Badge>
         </div>
       </div>
+
+      {/* Autoregulation Recommendation */}
+      <ExerciseAutoregulation
+        exercise={exercise}
+        sessionExercise={sessionExercise}
+      />
 
       {/* Target Info */}
       <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-background rounded-lg">

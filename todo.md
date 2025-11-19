@@ -82,3 +82,48 @@
 - [x] Verify autoregulation logic with various feedback scenarios
 - [x] Test analytics charts with multiple weeks of data
 - [x] Validate rest timer and notifications
+
+
+## Sprint 3: Advanced Features & UX Enhancements
+
+### Workout History
+- [x] Create dedicated History page with all completed sessions
+- [x] Add timeline view with date filtering (week/month/all time)
+- [x] Display session summaries with total volume and duration
+- [ ] Implement session comparison feature
+- [x] Add search and filter by exercise or muscle group
+
+### Autoregulation Integration
+- [x] Display set recommendations in ProgramDetail page
+- [x] Show AutoregulationInsights component for each exercise in microcycles
+- [x] Add visual indicators for recommended changes
+- [x] Implement one-click apply recommendations
+- [ ] Track when recommendations were last applied
+
+### Deload Detection
+- [x] Implement deload detection algorithm based on fatigue metrics
+- [x] Add deload recommendation banner when needed
+- [ ] Create deload week template with reduced volume
+- [ ] Track recovery metrics during deload weeks
+- [ ] Add manual deload week scheduling
+
+### Exercise Notes & Templates
+- [x] Add notes field to exercises for form cues
+- [x] Implement workout templates for quick session creation
+- [x] Add ability to duplicate previous sessions
+- [ ] Create exercise substitution suggestions
+- [ ] Add exercise video URL field
+
+### UX Enhancements
+- [x] Add skeleton loading states for all data fetching
+- [x] Implement error boundaries with retry functionality
+- [x] Add confirmation dialogs for destructive actions
+- [x] Improve mobile navigation with bottom tab bar
+- [ ] Add keyboard shortcuts for workout logging
+- [ ] Implement undo functionality for recent actions
+
+### Testing & Validation
+- [x] Test workout history with multiple months of data
+- [x] Verify deload detection accuracy
+- [x] Test autoregulation integration in program flow
+- [x] Validate all new features work offline

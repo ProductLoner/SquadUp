@@ -1,13 +1,24 @@
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, BookOpen, Calendar, BarChart3, Settings } from 'lucide-react';
+import { Dumbbell, Calendar, BookOpen, BarChart3, Settings, History as HistoryIcon } from 'lucide-react';
 import { APP_TITLE } from '@/const';
-import { useActiveMesocycle, useUpcomingWorkouts } from '@/hooks/useDatabase';
+import { useActiveMesocycle, useUpcomingWorkouts, useLogs } from '@/hooks/useDatabase';
+import { DeloadBanner } from '@/components/DeloadBanner';
+import { checkDeloadNeed } from '@/lib/deload';
+import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 export default function Home() {
   const activeMesocycle = useActiveMesocycle();
   const upcomingWorkouts = useUpcomingWorkouts();
+  const allLogs = useLogs() || [];
+  const [deloadDismissed, setDeloadDismissed] = useState(false);
+
+  // Check for deload need
+  const deloadRecommendation = useMemo(() => {
+    if (deloadDismissed) return null;
+    return checkDeloadNeed(allLogs);
+  }, [allLogs, deloadDismissed]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,7 +35,17 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="container max-w-6xl py-8">
+      <div className="container max-w-7xl py-12">
+        {/* Deload Banner */}
+        {deloadRecommendation && deloadRecommendation.needsDeload && (
+          <div className="mb-6">
+            <DeloadBanner
+              recommendation={deloadRecommendation}
+              onDismiss={() => setDeloadDismissed(true)}
+            />
+          </div>
+        )}
+
         {/* Active Program Status */}
         {activeMesocycle && (
           <div className="mb-8 p-6 bg-primary/10 border border-primary/20 rounded-lg">
@@ -93,6 +114,17 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* History */}
+          <Link href="/history">
+            <div className="p-8 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
+              <HistoryIcon className="w-12 h-12 text-purple-500 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">History</h2>
+              <p className="text-muted-foreground">
+                View all completed workouts and progress
+              </p>
+            </div>
+          </Link>
+
           {/* Analytics */}
           <Link href="/analytics">
             <div className="p-8 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
@@ -122,7 +154,7 @@ export default function Home() {
             <span className="text-sm text-green-500 font-medium">Offline-Ready</span>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
