@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
@@ -5,30 +6,36 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import Exercises from "./pages/Exercises";
+import Programs from "./pages/Programs";
+import ProgramDetail from "./pages/ProgramDetail";
+import WorkoutSession from "./pages/WorkoutSession";
+import Settings from "./pages/Settings";
+import { initializeDatabase } from "./lib/db";
 
 function Router() {
   return (
     <Switch>
       <Route path={"/"} component={Home} />
+      <Route path={"/exercises"} component={Exercises} />
+      <Route path={"/programs"} component={Programs} />
+      <Route path={"/programs/:id"} component={ProgramDetail} />
+      <Route path={"/workout/:id"} component={WorkoutSession} />
+      <Route path={"/settings"} component={Settings} />
       <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
+  useEffect(() => {
+    initializeDatabase().catch(console.error);
+  }, []);
+
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="dark">
         <TooltipProvider>
           <Toaster />
           <Router />
