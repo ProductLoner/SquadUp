@@ -24,6 +24,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useExercises, exerciseOperations } from '@/hooks/useDatabase';
 import type { MuscleGroup } from '@/lib/db';
 import { toast } from 'sonner';
+import { VideoPlayer } from '@/components/VideoPlayer';
 
 const muscleGroups: MuscleGroup[] = [
   'Chest', 'Back', 'Shoulders', 'Biceps', 'Triceps',
@@ -55,6 +56,7 @@ export default function Exercises() {
   const [formName, setFormName] = useState('');
   const [formMuscleGroup, setFormMuscleGroup] = useState<MuscleGroup>('Chest');
   const [formNotes, setFormNotes] = useState('');
+  const [formVideoUrl, setFormVideoUrl] = useState('');
 
   const filteredExercises = exercises?.filter(ex => {
     const matchesSearch = ex.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -73,6 +75,7 @@ export default function Exercises() {
         name: formName.trim(),
         muscle_group: formMuscleGroup,
         is_custom: true,
+        video_url: formVideoUrl.trim() || undefined,
         notes: formNotes.trim() || undefined,
         created_at: new Date(),
       });
@@ -96,6 +99,7 @@ export default function Exercises() {
       await exerciseOperations.update(editingExercise, {
         name: formName.trim(),
         muscle_group: formMuscleGroup,
+        video_url: formVideoUrl.trim() || undefined,
         notes: formNotes.trim() || undefined,
       });
       
@@ -126,6 +130,7 @@ export default function Exercises() {
 
     setFormName(exercise.name);
     setFormMuscleGroup(exercise.muscle_group);
+    setFormVideoUrl(exercise.video_url || '');
     setFormNotes(exercise.notes || '');
     setEditingExercise(id);
   };
@@ -133,6 +138,7 @@ export default function Exercises() {
   const resetForm = () => {
     setFormName('');
     setFormMuscleGroup('Chest');
+    setFormVideoUrl('');
     setFormNotes('');
   };
 
@@ -192,6 +198,19 @@ export default function Exercises() {
                   </Select>
                 </div>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="video_url">Video URL (Optional)</Label>
+                  <Input
+                    id="video_url"
+                    value={formVideoUrl}
+                    onChange={(e) => setFormVideoUrl(e.target.value)}
+                    placeholder="YouTube, Vimeo, or direct video link"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Add a form tutorial video for reference during workouts
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes (Optional)</Label>
                   <Textarea
@@ -269,6 +288,9 @@ export default function Exercises() {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  {exercise.video_url && (
+                    <VideoPlayer videoUrl={exercise.video_url} exerciseName={exercise.name} />
+                  )}
                   <Button
                     variant="ghost"
                     size="sm"

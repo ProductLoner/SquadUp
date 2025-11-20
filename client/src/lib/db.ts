@@ -9,6 +9,7 @@ export interface Exercise {
   name: string;
   muscle_group: MuscleGroup;
   is_custom: boolean;
+  video_url?: string;
   notes?: string;
   created_at: Date;
 }
@@ -55,6 +56,21 @@ export interface SessionExercise {
   created_at: Date;
 }
 
+export interface WorkoutTemplate {
+  id?: number;
+  name: string;
+  description?: string;
+  exercises: {
+    exercise_id: number;
+    order_index: number;
+    target_sets: number;
+    target_reps_min: number;
+    target_reps_max: number;
+    target_rir: number;
+  }[];
+  created_at: Date;
+}
+
 export interface Log {
   id?: number;
   session_exercise_id: number;
@@ -82,17 +98,19 @@ class HypertrophyDatabase extends Dexie {
   workout_sessions!: EntityTable<WorkoutSession, 'id'>;
   session_exercises!: EntityTable<SessionExercise, 'id'>;
   logs!: EntityTable<Log, 'id'>;
+  workout_templates!: EntityTable<WorkoutTemplate, 'id'>;
 
   constructor() {
     super('HypertrophyOS');
     
     this.version(1).stores({
-      exercises: '++id, name, muscle_group, is_custom, created_at',
+      exercises: '++id, name, muscle_group, is_custom, video_url, notes, created_at',
       mesocycles: '++id, name, phase_type, start_date, end_date, is_active, created_at',
       microcycles: '++id, mesocycle_id, week_number, start_date, created_at',
       workout_sessions: '++id, microcycle_id, scheduled_date, is_completed, created_at',
       session_exercises: '++id, session_id, exercise_id, order_index, created_at',
-      logs: '++id, session_exercise_id, session_id, exercise_id, session_date, created_at'
+      logs: '++id, session_exercise_id, session_id, exercise_id, session_date, created_at',
+      workout_templates: '++id, name, created_at'
     });
   }
 }

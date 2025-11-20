@@ -1,5 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type Exercise, type Mesocycle, type Microcycle, type WorkoutSession, type SessionExercise, type Log, type PhaseType, type MuscleGroup, calculateE1RM } from '@/lib/db';
+import { db, type Exercise, type Mesocycle, type Microcycle, type WorkoutSession, type SessionExercise, type Log, type WorkoutTemplate, type PhaseType, type MuscleGroup, calculateE1RM } from '@/lib/db';
 
 // Exercise hooks
 export function useExercises() {
@@ -226,6 +226,50 @@ export const sessionExerciseOperations = {
     return await db.session_exercises.delete(id);
   }
 };
+
+export const workoutTemplateOperations = {
+  async create(template: Omit<WorkoutTemplate, 'id'>) {
+    return await db.workout_templates.add(template);
+  },
+  
+  async update(id: number, changes: Partial<WorkoutTemplate>) {
+    return await db.workout_templates.update(id, changes);
+  },
+  
+  async delete(id: number) {
+    return await db.workout_templates.delete(id);
+  },
+  
+  async applyToSession(templateId: number, sessionId: number) {
+    const template = await db.workout_templates.get(templateId);
+    if (!template) throw new Error('Template not found');
+    
+    // Create session exercises from template
+    for (const ex of template.exercises) {
+      await sessionExerciseOperations.create({
+        session_id: sessionId,
+        exercise_id: ex.exercise_id,
+        order_index: ex.order_index,
+        target_sets: ex.target_sets,
+        target_reps_min: ex.target_reps_min,
+        target_reps_max: ex.target_reps_max,
+        target_rir: ex.target_rir,
+        created_at: new Date(),
+      });
+    }
+  },
+};
+
+export function useWorkoutTemplates() {
+  return useLiveQuery(() => db.workout_templates.orderBy('name').toArray());
+}
+
+export function useWorkoutTemplate(id?: number) {
+  return useLiveQuery(
+    () => id ? db.workout_templates.get(id) : undefined,
+    [id]
+  );
+}
 
 export const logOperations = {
   async create(log: Omit<Log, 'id' | 'e1rm'>) {

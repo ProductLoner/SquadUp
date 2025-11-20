@@ -13,6 +13,7 @@ import WorkoutSession from "./pages/WorkoutSession";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import History from "./pages/History";
+import Templates from "./pages/Templates";
 import { initializeDatabase } from "./lib/db";
 
 function Router() {
@@ -26,6 +27,7 @@ function Router() {
       <Route path={"/settings"} component={Settings} />
       <Route path={"/analytics"} component={Analytics} />
       <Route path={"/history"} component={History} />
+      <Route path={"/templates"} component={Templates} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

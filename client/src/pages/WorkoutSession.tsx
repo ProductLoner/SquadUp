@@ -32,6 +32,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { RestTimer } from '@/components/RestTimer';
 import { ExerciseAutoregulation } from '@/components/ExerciseAutoregulation';
+import { VideoPlayer } from '@/components/VideoPlayer';
 
 export default function WorkoutSession() {
   const [, params] = useRoute('/workout/:id');
@@ -365,13 +366,23 @@ function CurrentExerciseCard({
   return (
     <div className="p-6 bg-card border-2 border-primary rounded-lg">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-foreground mb-2">{exercise.name}</h2>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline">{exercise.muscle_group}</Badge>
-          <Badge variant="outline">
-            {setsCompleted} / {sessionExercise.target_sets} sets
-          </Badge>
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-foreground mb-2">{exercise.name}</h2>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">{exercise.muscle_group}</Badge>
+              <Badge variant="outline">
+                {setsCompleted} / {sessionExercise.target_sets} sets
+              </Badge>
+            </div>
+          </div>
+          <VideoPlayer videoUrl={exercise.video_url} exerciseName={exercise.name} />
         </div>
+        {exercise.notes && (
+          <p className="text-sm text-muted-foreground mt-2 p-3 bg-muted/50 rounded-lg">
+            <strong>Form Notes:</strong> {exercise.notes}
+          </p>
+        )}
       </div>
 
       {/* Autoregulation Recommendation */}

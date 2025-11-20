@@ -1,6 +1,6 @@
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Calendar, BookOpen, BarChart3, Settings, History as HistoryIcon } from 'lucide-react';
+import { Dumbbell, Calendar, BookOpen, BarChart3, Settings, History as HistoryIcon, FileText } from 'lucide-react';
 import { APP_TITLE } from '@/const';
 import { useActiveMesocycle, useUpcomingWorkouts, useLogs } from '@/hooks/useDatabase';
 import { DeloadBanner } from '@/components/DeloadBanner';
@@ -112,10 +112,19 @@ export default function Home() {
                 Browse and manage your exercise database
               </p>
             </div>
+          </Link>          {/* Templates */}
+          <Link href="/templates">
+            <div className="p-8 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
+              <FileText className="w-12 h-12 text-cyan-500 mb-4" />
+              <h2 className="text-xl font-semibold mb-2">Templates</h2>
+              <p className="text-muted-foreground">
+                Manage and reuse workout templates
+              </p>
+            </div>
           </Link>
 
-          {/* History */}
-          <Link href="/history">
+          {/* Settings */}
+          <Link href="/settings">
             <div className="p-8 bg-card border border-border rounded-xl hover:bg-accent/50 transition-colors cursor-pointer">
               <HistoryIcon className="w-12 h-12 text-purple-500 mb-4" />
               <h2 className="text-xl font-semibold mb-2">History</h2>

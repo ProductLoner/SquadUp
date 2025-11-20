@@ -127,3 +127,55 @@
 - [x] Verify deload detection accuracy
 - [x] Test autoregulation integration in program flow
 - [x] Validate all new features work offline
+
+
+## Sprint 4: Templates, Comparisons & Polish
+
+### Exercise Video Integration
+- [x] Add video_url field to Exercise schema
+- [x] Update exercise creation/edit forms with video URL input
+- [x] Implement video player component for workout sessions
+- [x] Add video preview in exercise library
+- [x] Support YouTube, Vimeo, and direct video URLs
+
+### Workout Templates
+- [x] Create WorkoutTemplate table in database
+- [ ] Add "Save as Template" button to completed sessions
+- [x] Build template library page with search and filter
+- [x] Implement "Create from Template" in program builder
+- [ ] Add template sharing/export functionality
+
+### Session Comparison
+- [ ] Create comparison view component
+- [ ] Add "Compare" button to history sessions
+- [ ] Display side-by-side metrics (volume, e1RM, RIR)
+- [ ] Show performance trends between sessions
+- [ ] Add exercise-level comparison details
+
+### Exercise Substitutions
+- [ ] Build substitution suggestion algorithm
+- [ ] Display alternative exercises by muscle group
+- [ ] Add "Swap Exercise" button in workout sessions
+- [ ] Track substitution history
+- [ ] Suggest based on equipment availability
+
+### Deload Week Templates
+- [ ] Create deload template generator (50% volume reduction)
+- [ ] Add "Schedule Deload" from deload banner
+- [ ] Implement deload microcycle creation
+- [ ] Track recovery metrics during deload
+- [ ] Add post-deload performance comparison
+
+### Final Polish
+- [ ] Add keyboard shortcuts (Enter to log set, Esc to cancel)
+- [ ] Implement undo last action functionality
+- [ ] Add data validation and error messages
+- [ ] Improve mobile responsiveness
+- [ ] Add onboarding tutorial for first-time users
+
+### Testing & Validation
+- [ ] Test video player with various URL formats
+- [ ] Verify template save/load workflow
+- [ ] Test session comparison with real data
+- [ ] Validate deload week generation
+- [ ] Complete end-to-end user flow testing
