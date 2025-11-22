@@ -179,3 +179,31 @@
 - [ ] Test session comparison with real data
 - [ ] Validate deload week generation
 - [ ] Complete end-to-end user flow testing
+
+
+## Sprint 5: Template Workflows & Comparisons
+
+### Template Workflows
+- [x] Add "Save as Template" button to History page sessions
+- [x] Implement template creation from completed sessions
+- [x] Add template selection dialog in program builder
+- [x] Apply template exercises to new workout sessions
+- [x] Display template preview before application
+
+### Session Comparison
+- [x] Create SessionComparison component
+- [x] Add "Compare" button to History sessions
+- [x] Implement session selection for comparison (2 sessions)
+- [x] Display side-by-side exercise comparison
+- [x] Show performance deltas (volume, e1RM, RIR)
+- [x] Add comparison summary statistics
+### Template Import/Export
+- [x] Add template export to JSON
+- [x] Implement template import with validation
+- [x] Add template sharing functionality
+
+### Testing & Validation
+- [x] Test save-as-template workflow
+- [x] Verify template application to sessions
+- [x] Test session comparison with real data
+- [x] Validate template import/export cycle

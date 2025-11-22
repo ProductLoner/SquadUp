@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Calendar, Dumbbell, TrendingUp, Clock, Filter } from 'lucide-react';
+import { ArrowLeft, Calendar, Dumbbell, TrendingUp, Clock, Filter, Save, GitCompare, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useWorkoutSessions, useLogs, useExercises } from '@/hooks/useDatabase';
+import { useWorkoutSessions, useLogs, useExercises, workoutTemplateOperations } from '@/hooks/useDatabase';
+import { db } from '@/lib/db';
 import type { WorkoutSession, Log, Exercise } from '@/lib/db';
 import { format, isAfter, subDays, subMonths } from 'date-fns';
+import { toast } from 'sonner';
+import { SessionComparison } from '@/components/SessionComparison';
 
 export default function History() {
   const allSessions = useWorkoutSessions();
@@ -24,6 +27,8 @@ export default function History() {
   const [dateFilter, setDateFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMuscleGroup, setSelectedMuscleGroup] = useState<string>('all');
+  const [selectedForComparison, setSelectedForComparison] = useState<number[]>([]);
+  const [showComparison, setShowComparison] = useState(false);
 
   // Filter completed sessions
   const completedSessions = useMemo(() => {
@@ -115,6 +120,70 @@ export default function History() {
     return Array.from(new Set(exercises.map(ex => ex.muscle_group))).sort();
   }, [exercises]);
 
+  const toggleComparisonSelection = (sessionId: number) => {
+    setSelectedForComparison(prev => {
+      if (prev.includes(sessionId)) {
+        return prev.filter(id => id !== sessionId);
+      }
+      if (prev.length >= 2) {
+        toast.error('You can only compare 2 sessions at a time');
+        return prev;
+      }
+      return [...prev, sessionId];
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedForComparison.length !== 2) {
+      toast.error('Please select exactly 2 sessions to compare');
+      return;
+    }
+    setShowComparison(true);
+  };
+
+  const handleSaveAsTemplate = async (sessionId: number) => {
+    try {
+      const session = allSessions?.find(s => s.id === sessionId);
+      if (!session) {
+        toast.error('Session not found');
+        return;
+      }
+
+      // Get session exercises
+      const sessionExercises = await db.session_exercises
+        .where('session_id')
+        .equals(sessionId)
+        .sortBy('order_index');
+      
+      if (!sessionExercises || sessionExercises.length === 0) {
+        toast.error('No exercises found in this session');
+        return;
+      }
+
+      // Create template from session
+      const templateExercises = sessionExercises.map(se => ({
+        exercise_id: se.exercise_id,
+        order_index: se.order_index,
+        target_sets: se.target_sets,
+        target_reps_min: se.target_reps_min,
+        target_reps_max: se.target_reps_max,
+        target_rir: se.target_rir,
+      }));
+
+      await workoutTemplateOperations.create({
+        name: `${session.name} Template`,
+        description: `Created from session on ${format(session.scheduled_date, 'MMM d, yyyy')}`,
+        exercises: templateExercises,
+        created_at: new Date(),
+      });
+
+      toast.success('Template saved successfully!');
+    } catch (error) {
+      toast.error('Failed to save template');
+      console.error(error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container max-w-6xl py-8">
@@ -134,6 +203,27 @@ export default function History() {
                 {filteredSessions.length} completed session{filteredSessions.length !== 1 ? 's' : ''}
               </p>
             </div>
+            
+            {selectedForComparison.length > 0 && (
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="text-base px-4 py-2">
+                  {selectedForComparison.length} selected
+                </Badge>
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedForComparison([])}
+                >
+                  Clear
+                </Button>
+                <Button
+                  onClick={handleCompare}
+                  disabled={selectedForComparison.length !== 2}
+                >
+                  <GitCompare className="w-4 h-4 mr-2" />
+                  Compare Sessions
+                </Button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -207,26 +297,55 @@ export default function History() {
               const sessionExerciseIds = new Set(sessionLogs.map(log => log.exercise_id));
               const sessionExercises = exercises.filter(ex => sessionExerciseIds.has(ex.id!));
 
+              const isSelected = selectedForComparison.includes(session.id!);
+
               return (
-                <Card key={session.id} className="p-6 hover:bg-accent/50 transition-colors">
+                <Card key={session.id} className={`p-6 transition-colors ${
+                  isSelected ? 'bg-primary/10 border-primary' : 'hover:bg-accent/50'
+                }`}>
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-semibold">{session.name}</h3>
-                        <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
-                          Completed
-                        </Badge>
-                      </div>
+                    <div className="flex items-center gap-3 flex-1">
+                      <Button
+                        variant={isSelected ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => toggleComparisonSelection(session.id!)}
+                        className="shrink-0"
+                      >
+                        {isSelected ? (
+                          <CheckCircle2 className="w-4 h-4" />
+                        ) : (
+                          <GitCompare className="w-4 h-4" />
+                        )}
+                      </Button>
+                      
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-semibold">{session.name}</h3>
+                          <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/20">
+                            Completed
+                          </Badge>
+                        </div>
                       <p className="text-sm text-muted-foreground">
                         {format(session.scheduled_date, 'EEEE, MMMM d, yyyy')}
                       </p>
                     </div>
+                    </div>
                     
-                    <Link href={`/workout/${session.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleSaveAsTemplate(session.id!)}
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save as Template
                       </Button>
-                    </Link>
+                      <Link href={`/workout/${session.id}`}>
+                        <Button variant="outline" size="sm">
+                          View Details
+                        </Button>
+                      </Link>
+                    </div>
                   </div>
 
                   {/* Stats Grid */}
@@ -281,6 +400,21 @@ export default function History() {
           </div>
         )}
       </div>
+
+      {/* Session Comparison Modal */}
+      {showComparison && selectedForComparison.length === 2 && (
+        <SessionComparison
+          session1={allSessions!.find(s => s.id === selectedForComparison[0])!}
+          session2={allSessions!.find(s => s.id === selectedForComparison[1])!}
+          logs1={allLogs.filter(log => log.session_id === selectedForComparison[0])}
+          logs2={allLogs.filter(log => log.session_id === selectedForComparison[1])}
+          exercises={exercises}
+          onClose={() => {
+            setShowComparison(false);
+            setSelectedForComparison([]);
+          }}
+        />
+      )}
     </div>
   );
 }

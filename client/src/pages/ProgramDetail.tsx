@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRoute, Link } from 'wouter';
-import { ArrowLeft, Plus, Calendar, Dumbbell, Trash2 } from 'lucide-react';
+import { ArrowLeft, Plus, Calendar, Dumbbell, Trash2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -26,9 +26,11 @@ import {
   useMicrocycles,
   useWorkoutSessions,
   useExercises,
+  useWorkoutTemplates,
   microcycleOperations,
   workoutSessionOperations,
   sessionExerciseOperations,
+  workoutTemplateOperations,
 } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
 import { format, addDays } from 'date-fns';
@@ -40,6 +42,7 @@ export default function ProgramDetail() {
   const mesocycle = useMesocycle(mesocycleId);
   const microcycles = useMicrocycles(mesocycleId);
   const exercises = useExercises();
+  const templates = useWorkoutTemplates();
   
   const [isAddMicroDialogOpen, setIsAddMicroDialogOpen] = useState(false);
   const [isAddSessionDialogOpen, setIsAddSessionDialogOpen] = useState(false);
@@ -49,6 +52,7 @@ export default function ProgramDetail() {
   const [sessionName, setSessionName] = useState('');
   const [sessionDate, setSessionDate] = useState('');
   const [selectedExercises, setSelectedExercises] = useState<number[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<number | undefined>();
 
   const handleGenerateMicrocycles = async () => {
     if (!mesocycle) return;
@@ -94,21 +98,27 @@ export default function ProgramDetail() {
         created_at: new Date(),
       });
 
-      // Add selected exercises to the session
-      for (let i = 0; i < selectedExercises.length; i++) {
-        await sessionExerciseOperations.create({
-          session_id: sessionId as number,
-          exercise_id: selectedExercises[i],
-          order_index: i,
-          target_sets: 3,
-          target_reps_min: 8,
-          target_reps_max: 12,
-          target_rir: 2,
-          created_at: new Date(),
-        });
+      // Apply template if selected
+      if (selectedTemplateId) {
+        await workoutTemplateOperations.applyToSession(selectedTemplateId, sessionId as number);
+        toast.success('Workout session created from template');
+      } else {
+        // Add manually selected exercises to the session
+        for (let i = 0; i < selectedExercises.length; i++) {
+          await sessionExerciseOperations.create({
+            session_id: sessionId as number,
+            exercise_id: selectedExercises[i],
+            order_index: i,
+            target_sets: 3,
+            target_reps_min: 8,
+            target_reps_max: 12,
+            target_rir: 2,
+            created_at: new Date(),
+          });
+        }
+        toast.success('Workout session created');
       }
       
-      toast.success('Workout session created');
       resetSessionForm();
       setIsAddSessionDialogOpen(false);
     } catch (error) {
@@ -121,6 +131,12 @@ export default function ProgramDetail() {
     setSessionName('');
     setSessionDate('');
     setSelectedExercises([]);
+    setSelectedTemplateId(undefined);
+  };
+
+  const handleTemplateSelect = (templateId: number | undefined) => {
+    setSelectedTemplateId(templateId);
+    setSelectedExercises([]); // Clear manual selection when template is chosen
   };
 
   const toggleExercise = (exerciseId: number) => {
@@ -253,9 +269,40 @@ export default function ProgramDetail() {
               </div>
             </div>
             
+            {/* Template Selection */}
             <div className="space-y-2">
-              <Label>Select Exercises</Label>
-              <div className="max-h-64 overflow-y-auto border border-border rounded-lg p-3 space-y-2">
+              <Label>Use Template (Optional)</Label>
+              <Select
+                value={selectedTemplateId?.toString()}
+                onValueChange={(value) => handleTemplateSelect(value === 'none' ? undefined : parseInt(value))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a template or choose exercises manually" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No Template (Manual Selection)</SelectItem>
+                  {templates?.map(template => (
+                    <SelectItem key={template.id} value={template.id!.toString()}>
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        {template.name} ({template.exercises.length} exercises)
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {selectedTemplateId && (
+                <p className="text-xs text-green-500">
+                  Template selected. Exercises will be added automatically.
+                </p>
+              )}
+            </div>
+
+            {/* Manual Exercise Selection */}
+            {!selectedTemplateId && (
+            <div className="space-y-2">
+                <Label>Select Exercises</Label>
+                <div className="max-h-64 overflow-y-auto border border-border rounded-lg p-3 space-y-2">
                 {exercises?.map(exercise => (
                   <div
                     key={exercise.id}
@@ -277,6 +324,7 @@ export default function ProgramDetail() {
                 {selectedExercises.length} exercise(s) selected
               </p>
             </div>
+            )}
           </div>
           
           <DialogFooter>

@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, Download, Upload, Database, FileJson, FileSpreadsheet } from 'lucide-react';
+import { ArrowLeft, Download, Upload, Database, FileJson, FileSpreadsheet, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { db } from '@/lib/db';
+import { workoutTemplateOperations } from '@/hooks/useDatabase';
 import { toast } from 'sonner';
 import { APP_TITLE } from '@/const';
 
@@ -114,6 +115,59 @@ export default function Settings() {
     }
   };
 
+  const handleExportTemplates = async () => {
+    setIsExporting(true);
+    try {
+      const templates = await db.workout_templates.toArray();
+      const dataStr = JSON.stringify(templates, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `hypertrophy-templates-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Templates exported successfully');
+    } catch (error) {
+      toast.error('Failed to export templates');
+      console.error(error);
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportTemplates = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const text = await file.text();
+      const templates = JSON.parse(text);
+      
+      if (!Array.isArray(templates)) {
+        toast.error('Invalid template file format');
+        return;
+      }
+
+      let imported = 0;
+      for (const template of templates) {
+        // Remove id to avoid conflicts
+        const { id, ...templateData } = template;
+        await workoutTemplateOperations.create(templateData);
+        imported++;
+      }
+
+      toast.success(`Imported ${imported} template(s)`);
+      event.target.value = ''; // Reset input
+    } catch (error) {
+      toast.error('Failed to import templates');
+      console.error(error);
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const handleClearData = async () => {
     if (!confirm('Are you sure you want to delete ALL data? This cannot be undone!')) return;
     if (!confirm('This will permanently delete all exercises, programs, and workout logs. Are you absolutely sure?')) return;
@@ -198,6 +252,70 @@ export default function Settings() {
                       <Download className="w-4 h-4 mr-2" />
                       {isExporting ? 'Exporting...' : 'Export CSV'}
                     </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          {/* Template Export/Import Section */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Workout Templates</h2>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Card className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-orange-500/10 rounded-lg">
+                    <FileText className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">Export Templates</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Export your workout templates to share or backup
+                    </p>
+                    <Button
+                      onClick={handleExportTemplates}
+                      disabled={isExporting}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {isExporting ? 'Exporting...' : 'Export Templates'}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+
+              <Card className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-orange-500/10 rounded-lg">
+                    <FileText className="w-6 h-6 text-orange-500" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold mb-2">Import Templates</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Import templates from a JSON file
+                    </p>
+                    <input
+                      type="file"
+                      accept=".json"
+                      onChange={handleImportTemplates}
+                      disabled={isImporting}
+                      className="hidden"
+                      id="import-templates"
+                    />
+                    <label htmlFor="import-templates" className="flex-1">
+                      <Button
+                        asChild
+                        disabled={isImporting}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <span>
+                          <Upload className="w-4 h-4 mr-2" />
+                          {isImporting ? 'Importing...' : 'Import Templates'}
+                        </span>
+                      </Button>
+                    </label>
                   </div>
                 </div>
               </Card>
