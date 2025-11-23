@@ -207,3 +207,32 @@
 - [x] Verify template application to sessions
 - [x] Test session comparison with real data
 - [x] Validate template import/export cycle
+
+## Sprint 6: Intelligent Recommendations
+
+### Progression Guidance
+- [x] Implement weight progression algorithm based on RIR performance
+- [x] Add progression recommendation component
+- [x] Display weight increase suggestions in workout sessions
+- [ ] Track progression acceptance/rejection history
+- [ ] Add progressive overload visualization
+
+### Exercise Rotation Logic
+- [x] Implement exercise staleness detection (6-8 week threshold)
+- [x] Create rotation recommendation system
+- [ ] Add exercise age tracking to database
+- [ ] Display rotation suggestions in program builder
+- [x] Suggest alternative exercises from same muscle group
+
+### Exercise Substitution System
+- [x] Create substitution recommendation algorithm
+- [x] Build exercise substitution UI component
+- [x] Add muscle group-based exercise matching
+- [x] Implement injury-based substitution suggestions
+- [x] Add quick-swap functionality in workout sessions
+
+### Testing & Validation
+- [x] Test progression recommendations with various RIR patterns
+- [x] Verify rotation detection after 6-8 weeks
+- [x] Test substitution suggestions for all muscle groups
+- [x] Validate recommendation logic with edge cases

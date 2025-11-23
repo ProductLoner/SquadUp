@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRoute, Link, useLocation } from 'wouter';
-import { ArrowLeft, Plus, Check, Timer } from 'lucide-react';
+import { ArrowLeft, Plus, Check, Timer, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +33,8 @@ import { format } from 'date-fns';
 import { RestTimer } from '@/components/RestTimer';
 import { ExerciseAutoregulation } from '@/components/ExerciseAutoregulation';
 import { VideoPlayer } from '@/components/VideoPlayer';
+import { ProgressionRecommendation } from '@/components/ProgressionRecommendation';
+import { analyzeProgression } from '@/lib/progression';
 
 export default function WorkoutSession() {
   const [, params] = useRoute('/workout/:id');
@@ -357,11 +359,18 @@ function CurrentExerciseCard({
   onLogSet,
 }: any) {
   const exercise = useExercise(sessionExercise.exercise_id);
+  const allLogs = useLogs();
 
   if (!exercise) return null;
 
   const setsCompleted = logs.length;
   const setsRemaining = sessionExercise.target_sets - setsCompleted;
+
+  // Get progression recommendation
+  const exerciseLogs = allLogs?.filter(log => log.exercise_id === exercise.id) || [];
+  const progressionRec = exerciseLogs.length >= 3 
+    ? analyzeProgression(exerciseLogs, exercise.name, exercise.muscle_group)
+    : null;
 
   return (
     <div className="p-6 bg-card border-2 border-primary rounded-lg">
@@ -384,6 +393,20 @@ function CurrentExerciseCard({
           </p>
         )}
       </div>
+
+      {/* Progression Recommendation */}
+      {progressionRec && progressionRec.shouldProgress && (
+        <div className="mb-4">
+          <ProgressionRecommendation
+            recommendation={progressionRec}
+            exerciseName={exercise.name}
+            onAccept={(newWeight) => {
+              setWeight(newWeight.toString());
+              toast.success(`Weight updated to ${newWeight} kg`);
+            }}
+          />
+        </div>
+      )}
 
       {/* Autoregulation Recommendation */}
       <ExerciseAutoregulation
