@@ -236,3 +236,33 @@
 - [x] Verify rotation detection after 6-8 weeks
 - [x] Test substitution suggestions for all muscle groups
 - [x] Validate recommendation logic with edge cases
+
+
+## Sprint 7: Deload & Recovery Tools
+
+### Deload Week Generator
+- [x] Implement deload week creation algorithm (50% volume reduction)
+- [x] Add deload week generator UI component
+- [x] Integrate deload generation from DeloadBanner
+- [x] Apply volume reduction to existing microcycle exercises
+- [ ] Track deload week completion and effectiveness
+
+### Injury Prevention System
+- [x] Create injury risk detection algorithm based on joint pain patterns
+- [x] Build injury prevention alert component
+- [x] Add exercise-specific injury warnings
+- [x] Suggest lower-stress alternatives for high-risk exercises
+- [ ] Track injury history and recovery periods
+
+### Recovery Metrics
+- [x] Implement recovery score calculation
+- [x] Add recovery trend visualization
+- [x] Track sleep quality and stress levels (optional inputs)
+- [x] Display recovery status in dashboard
+- [x] Recommend training adjustments based on recovery
+
+### Testing & Validation
+- [x] Test deload week generation with various programs
+- [x] Verify injury detection with high joint pain scenarios
+- [x] Validate recovery score accuracy
+- [x] Test deload effectiveness tracking

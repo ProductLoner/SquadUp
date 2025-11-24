@@ -2,9 +2,11 @@ import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { Dumbbell, Calendar, BookOpen, BarChart3, Settings, History as HistoryIcon, FileText } from 'lucide-react';
 import { APP_TITLE } from '@/const';
-import { useActiveMesocycle, useUpcomingWorkouts, useLogs } from '@/hooks/useDatabase';
+import { useActiveMesocycle, useUpcomingWorkouts, useLogs, useExercises } from '@/hooks/useDatabase';
 import { DeloadBanner } from '@/components/DeloadBanner';
 import { checkDeloadNeed } from '@/lib/deload';
+import { InjuryPreventionAlert } from '@/components/InjuryPreventionAlert';
+import { getAllInjuryRisks, suggestLowerStressAlternatives } from '@/lib/injuryPrevention';
 import { useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 
@@ -12,6 +14,7 @@ export default function Home() {
   const activeMesocycle = useActiveMesocycle();
   const upcomingWorkouts = useUpcomingWorkouts();
   const allLogs = useLogs() || [];
+  const exercises = useExercises();
   const [deloadDismissed, setDeloadDismissed] = useState(false);
 
   // Check for deload need
@@ -19,6 +22,12 @@ export default function Home() {
     if (deloadDismissed) return null;
     return checkDeloadNeed(allLogs);
   }, [allLogs, deloadDismissed]);
+
+  // Check for injury risks
+  const injuryRisks = useMemo(() => {
+    if (!exercises) return [];
+    return getAllInjuryRisks(allLogs, exercises);
+  }, [allLogs, exercises]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,6 +52,23 @@ export default function Home() {
               recommendation={deloadRecommendation}
               onDismiss={() => setDeloadDismissed(true)}
             />
+          </div>
+        )}
+
+        {/* Injury Prevention Alerts */}
+        {injuryRisks.length > 0 && exercises && (
+          <div className="mb-6 space-y-4">
+            {injuryRisks.slice(0, 2).map((risk) => {
+              const exercise = exercises.find(e => e.id === risk.exerciseId);
+              const alternatives = exercise ? suggestLowerStressAlternatives(exercise, exercises) : [];
+              return (
+                <InjuryPreventionAlert
+                  key={risk.exerciseId}
+                  risk={risk}
+                  alternatives={alternatives}
+                />
+              );
+            })}
           </div>
         )}
 
