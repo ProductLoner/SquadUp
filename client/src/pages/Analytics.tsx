@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'wouter';
-import { ArrowLeft, TrendingUp, Calendar, Dumbbell, Target } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Calendar, Dumbbell, Target, Activity, AlertCircle, Scale } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -9,6 +9,7 @@ import { useExercises, useLogs } from '@/hooks/useDatabase';
 import type { Exercise, Log } from '@/lib/db';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { format, subDays, isAfter } from 'date-fns';
+import { calculateFatigueIndex, analyzeMuscleGroupBalance, calculateTrainingDensity } from '@/lib/advancedAnalytics';
 
 const MUSCLE_GROUP_COLORS: Record<string, string> = {
   Chest: '#ef4444',
@@ -103,6 +104,18 @@ export default function Analytics() {
         value: parseFloat(value.toFixed(0)),
       }))
       .sort((a, b) => b.value - a.value);
+  }, [filteredLogs, exercises]);
+
+  // Calculate fatigue index
+  const fatigueMetrics = useMemo(() => {
+    const recentLogs = filteredLogs.slice(-50); // Last ~50 sets
+    const weeklyVolumes = [1000, 1200, 1300, 1400]; // Placeholder
+    return calculateFatigueIndex(recentLogs, weeklyVolumes);
+  }, [filteredLogs]);
+
+  // Calculate muscle group balance
+  const balanceAnalysis = useMemo(() => {
+    return analyzeMuscleGroupBalance(filteredLogs, exercises);
   }, [filteredLogs, exercises]);
 
   // Calculate personal records
@@ -319,6 +332,124 @@ export default function Analytics() {
                 </div>
               </Card>
             )}
+
+            {/* Fatigue Index */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Activity className="w-5 h-5" />
+                Fatigue Index
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Current Fatigue Level</p>
+                    <p className="text-3xl font-bold">
+                      {fatigueMetrics.fatigueIndex.toFixed(0)}/100
+                    </p>
+                  </div>
+                  <Badge 
+                    variant={fatigueMetrics.fatigueLevel === 'severe' || fatigueMetrics.fatigueLevel === 'high' ? 'destructive' : 'secondary'}
+                    className="text-lg capitalize"
+                  >
+                    {fatigueMetrics.fatigueLevel}
+                  </Badge>
+                </div>
+                
+                <div className="h-3 bg-muted rounded-full overflow-hidden">
+                  <div 
+                    className={`h-full transition-all ${
+                      fatigueMetrics.fatigueLevel === 'severe' ? 'bg-red-500' :
+                      fatigueMetrics.fatigueLevel === 'high' ? 'bg-orange-500' :
+                      fatigueMetrics.fatigueLevel === 'moderate' ? 'bg-yellow-500' :
+                      'bg-green-500'
+                    }`}
+                    style={{ width: `${fatigueMetrics.fatigueIndex}%` }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 pt-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Avg Soreness</p>
+                    <p className="text-lg font-semibold">{fatigueMetrics.avgSoreness.toFixed(1)}/5</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Avg Joint Pain</p>
+                    <p className="text-lg font-semibold">{fatigueMetrics.avgJointPain.toFixed(1)}/5</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Performance</p>
+                    <p className="text-lg font-semibold capitalize">{fatigueMetrics.performanceTrend}</p>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-muted/50 rounded-lg">
+                  <p className="text-sm">{fatigueMetrics.recommendation}</p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Muscle Group Balance */}
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Scale className="w-5 h-5" />
+                Muscle Group Balance
+              </h2>
+              <div className="space-y-6">
+                <div className="p-4 bg-accent/50 rounded-lg">
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-medium">Push/Pull Ratio</p>
+                    <Badge variant="outline">
+                      {balanceAnalysis.pushPullRatio.toFixed(2)}:1
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Ideal range: 1:1 to 1:1.5 (push:pull)
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-sm font-medium mb-3">Volume Distribution</p>
+                  <div className="space-y-2">
+                    {balanceAnalysis.distribution.slice(0, 6).map((mg) => (
+                      <div key={mg.muscleGroup} className="space-y-1">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>{mg.muscleGroup}</span>
+                          <span className="text-muted-foreground">
+                            {mg.totalSets} sets ({mg.percentage.toFixed(1)}%)
+                          </span>
+                        </div>
+                        <div className="h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="h-full"
+                            style={{ 
+                              width: `${mg.percentage}%`,
+                              backgroundColor: MUSCLE_GROUP_COLORS[mg.muscleGroup] || '#888'
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {balanceAnalysis.imbalances.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-yellow-500" />
+                      Detected Imbalances
+                    </p>
+                    <div className="space-y-2">
+                      {balanceAnalysis.imbalances.map((imbalance, idx) => (
+                        <div key={idx} className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+                          <p className="text-sm font-medium mb-1">{imbalance.issue}</p>
+                          <p className="text-xs text-muted-foreground">{imbalance.recommendation}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Card>
 
             {/* Personal Records */}
             {personalRecords.length > 0 && (
